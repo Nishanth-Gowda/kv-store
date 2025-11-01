@@ -33,3 +33,4 @@ func CreateLogSegmentFile(directory string, segmentId int) (*os.File, error) {
 	
 	return file, nil
 }
+
