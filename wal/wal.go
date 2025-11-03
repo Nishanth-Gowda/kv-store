@@ -3,6 +3,7 @@ package wal
 import (
 	"bufio"
 	"context"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -117,12 +118,55 @@ func (wal *WAL) getLastEntryInLog() (*WAL_Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	defer file.Close()
-	
+
 	var previousSize int32
 	var offset int64
 	var entry *WAL_Entry
 
-	return entry, nil
+	for {
+		var size int32
+		if err := binary.Read(file, binary.LittleEndian, &size); err != nil {
+			if err == io.EOF {
+
+				// we have reached the end of the file, read the last entry
+				// at the saved offset and return it
+				if offset == 0 {
+					return entry, nil
+				}
+
+				// seek to the beginning of the file
+				if _, err := file.Seek(offset, io.SeekStart); err != nil {
+					return nil, err
+				}
+
+				data := make([]byte, previousSize)
+				if _, err := io.ReadFull(file, data); err != nil {
+					return nil, err
+				}
+
+				entry, err := unMarshalAndVerifyEntry(data)
+				if err != nil {
+					return nil, err
+				}
+
+				return entry, nil
+			}
+			
+			return nil, err
+		}
+		
+		// Get current offset
+		offset, err = file.Seek(0, io.SeekCurrent)
+		previousSize = size
+		
+		if err != nil {
+			return nil, err
+		}
+		
+		if _, err := file.Seek(int64(size), io.SeekCurrent); err != nil {
+			return nil, err
+		}
+	}
 }
