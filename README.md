@@ -310,23 +310,5 @@ All operations return errors that should be checked:
 
 ## Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## License
-
-This project is open source. Please check the LICENSE file for details.
-
-## Author
-
-Nishanth Gowda
-
----
-
 For issues, questions, or contributions, please open an issue on GitHub.
 
